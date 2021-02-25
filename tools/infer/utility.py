@@ -28,6 +28,7 @@ def parse_args():
         return v.lower() in ("true", "t", "1")
 
     parser = argparse.ArgumentParser()
+
     # params for prediction engine
     parser.add_argument("--use_gpu", type=str2bool, default=True)
     parser.add_argument("--ir_optim", type=str2bool, default=True)
@@ -37,10 +38,10 @@ def parse_args():
 
     # params for text detector
     parser.add_argument("--image_dir", type=str)
-    parser.add_argument("--det_algorithm", type=str, default='DB')
+    parser.add_argument("--det_algorithm", type=str, default="DB")
     parser.add_argument("--det_model_dir", type=str)
     parser.add_argument("--det_limit_side_len", type=float, default=960)
-    parser.add_argument("--det_limit_type", type=str, default='max')
+    parser.add_argument("--det_limit_type", type=str, default="max")
 
     # DB parmas
     parser.add_argument("--det_db_thresh", type=float, default=0.3)
@@ -60,39 +61,113 @@ def parse_args():
     parser.add_argument("--det_sast_polygon", type=bool, default=False)
 
     # params for text recognizer
-    parser.add_argument("--rec_algorithm", type=str, default='CRNN')
+    parser.add_argument("--rec_algorithm", type=str, default="CRNN")
     parser.add_argument("--rec_model_dir", type=str)
     parser.add_argument("--rec_image_shape", type=str, default="3, 32, 320")
-    parser.add_argument("--rec_char_type", type=str, default='ch')
+    parser.add_argument("--rec_char_type", type=str, default="ch")
     parser.add_argument("--rec_batch_num", type=int, default=6)
     parser.add_argument("--max_text_length", type=int, default=25)
     parser.add_argument(
-        "--rec_char_dict_path",
-        type=str,
-        default="./ppocr/utils/ppocr_keys_v1.txt")
+        "--rec_char_dict_path", type=str, default="./ppocr/utils/ppocr_keys_v1.txt"
+    )
     parser.add_argument("--use_space_char", type=str2bool, default=True)
-    parser.add_argument(
-        "--vis_font_path", type=str, default="./doc/fonts/simfang.ttf")
+    parser.add_argument("--vis_font_path", type=str, default="./doc/fonts/simfang.ttf")
     parser.add_argument("--drop_score", type=float, default=0.5)
 
     # params for text classifier
     parser.add_argument("--use_angle_cls", type=str2bool, default=False)
     parser.add_argument("--cls_model_dir", type=str)
     parser.add_argument("--cls_image_shape", type=str, default="3, 48, 192")
-    parser.add_argument("--label_list", type=list, default=['0', '180'])
+    parser.add_argument("--label_list", type=list, default=["0", "180"])
     parser.add_argument("--cls_batch_num", type=int, default=6)
     parser.add_argument("--cls_thresh", type=float, default=0.9)
 
     parser.add_argument("--enable_mkldnn", type=str2bool, default=False)
     parser.add_argument("--use_pdserving", type=str2bool, default=False)
 
-    return parser.parse_args()
+    d = parser.parse_args()
+    # TODO, hotfix
+    d.det_model_dir = "/home/bricy/workspace/project/PaddleOCR/inference/ch_ppocr_server_v2.0_det_infer"
+    d.rec_model_dir = "/home/bricy/workspace/project/PaddleOCR/inference/ch_ppocr_server_v2.0_rec_infer"
+    d.cls_model_dir = "/home/bricy/workspace/project/PaddleOCR/inference/ch_ppocr_mobile_v2.0_cls_infer"
+    d.use_angle_cls = True
+    d.use_space_char = True
+    d.rec_char_dict_path = (
+        "/home/bricy/workspace/project/PaddleOCR/ppocr/utils/ppocr_keys_v1.txt"
+    )
+
+    return d
+
+
+def create_args():
+    from types import SimpleNamespace
+
+    sn = SimpleNamespace()
+
+    # params for prediction engine
+    sn.use_gpu = True
+    sn.ir_optim = True
+    sn.ir_optim = True
+    sn.use_tensorrt = False
+    sn.use_fp16 = False
+    sn.gpu_mem = 500
+
+    # params for text detector
+    sn.det_algorithm = "DB"
+    sn.det_limit_side_len = 960
+    sn.det_limit_type = "max"
+
+    # DB parmas
+    sn.det_db_thresh = 0.3
+    sn.det_db_box_thresh = 0.5
+    sn.det_db_unclip_ratio = 1.6
+    sn.max_batch_size = 10
+    sn.use_dilation = False
+
+    # EAST parmas
+    sn.det_east_score_thresh = 0.8
+    sn.det_east_cover_thresh = 0.1
+    sn.det_east_nms_thresh = 0.2
+
+    # SAST parmas
+    sn.det_sast_score_thresh = 0.5
+    sn.det_sast_nms_thresh = 0.2
+    sn.det_sast_polygon = False
+
+    # params for text recognizer
+    sn.rec_algorithm = "CRNN"
+    sn.rec_image_shape = "3, 32, 320"
+    sn.rec_char_type = "ch"
+    sn.rec_batch_num = 6
+    sn.max_text_length = 25
+    sn.rec_char_dict_path = (
+        "/home/bricy/workspace/project/PaddleOCR/ppocr/utils/ppocr_keys_v1.txt"
+    )
+    sn.use_space_char = False
+    sn.vis_font_path = "./doc/fonts/simfang.ttf"
+    sn.drop_score = 0.5
+
+    # params for text classifier
+    sn.use_angle_cls = False
+    sn.cls_image_shape = "3, 48, 192"
+    sn.label_list = ["0", "180"]
+    sn.cls_batch_num = 6
+    sn.cls_thresh = 0.9
+    sn.enable_mkldnn = False
+    sn.use_pdserving = False
+
+    sn.det_model_dir = "/home/bricy/workspace/project/PaddleOCR/inference/ch_ppocr_server_v2.0_det_infer"
+    sn.rec_model_dir = "/home/bricy/workspace/project/PaddleOCR/inference/ch_ppocr_server_v2.0_rec_infer"
+    sn.cls_model_dir = "/home/bricy/workspace/project/PaddleOCR/inference/ch_ppocr_mobile_v2.0_cls_infer"
+    sn.use_angle_cls = True
+    sn.use_space_char = True
+    return sn
 
 
 def create_predictor(args, mode, logger):
     if mode == "det":
         model_dir = args.det_model_dir
-    elif mode == 'cls':
+    elif mode == "cls":
         model_dir = args.cls_model_dir
     else:
         model_dir = args.rec_model_dir
@@ -116,8 +191,10 @@ def create_predictor(args, mode, logger):
         if args.use_tensorrt:
             config.enable_tensorrt_engine(
                 precision_mode=inference.PrecisionType.Half
-                if args.use_fp16 else inference.PrecisionType.Float32,
-                max_batch_size=args.max_batch_size)
+                if args.use_fp16
+                else inference.PrecisionType.Float32,
+                max_batch_size=args.max_batch_size,
+            )
     else:
         config.disable_gpu()
         config.set_cpu_math_library_num_threads(6)
@@ -126,7 +203,7 @@ def create_predictor(args, mode, logger):
             config.set_mkldnn_cache_capacity(10)
             config.enable_mkldnn()
             #  TODO LDOUBLEV: fix mkldnn bug when bach_size  > 1
-            #config.set_mkldnn_op({'conv2d', 'depthwise_conv2d', 'pool2d', 'batch_norm'})
+            # config.set_mkldnn_op({'conv2d', 'depthwise_conv2d', 'pool2d', 'batch_norm'})
             args.rec_batch_num = 1
 
     # config.enable_memory_optim()
@@ -168,12 +245,9 @@ def resize_img(img, input_size=600):
     return img
 
 
-def draw_ocr(image,
-             boxes,
-             txts=None,
-             scores=None,
-             drop_score=0.5,
-             font_path="./doc/simfang.ttf"):
+def draw_ocr(
+    image, boxes, txts=None, scores=None, drop_score=0.5, font_path="./doc/simfang.ttf"
+):
     """
     Visualize the results of OCR detection and recognition
     args:
@@ -190,8 +264,7 @@ def draw_ocr(image,
         scores = [1] * len(boxes)
     box_num = len(boxes)
     for i in range(box_num):
-        if scores is not None and (scores[i] < drop_score or
-                                   math.isnan(scores[i])):
+        if scores is not None and (scores[i] < drop_score or math.isnan(scores[i])):
             continue
         box = np.reshape(np.array(boxes[i]), [-1, 1, 2]).astype(np.int64)
         image = cv2.polylines(np.array(image), [box], True, (255, 0, 0), 2)
@@ -203,21 +276,19 @@ def draw_ocr(image,
             img_h=img.shape[0],
             img_w=600,
             threshold=drop_score,
-            font_path=font_path)
+            font_path=font_path,
+        )
         img = np.concatenate([np.array(img), np.array(txt_img)], axis=1)
         return img
     return image
 
 
-def draw_ocr_box_txt(image,
-                     boxes,
-                     txts,
-                     scores=None,
-                     drop_score=0.5,
-                     font_path="./doc/simfang.ttf"):
+def draw_ocr_box_txt(
+    image, boxes, txts, scores=None, drop_score=0.5, font_path="./doc/simfang.ttf"
+):
     h, w = image.height, image.width
     img_left = image.copy()
-    img_right = Image.new('RGB', (w, h), (255, 255, 255))
+    img_right = Image.new("RGB", (w, h), (255, 255, 255))
 
     import random
 
@@ -227,35 +298,41 @@ def draw_ocr_box_txt(image,
     for idx, (box, txt) in enumerate(zip(boxes, txts)):
         if scores is not None and scores[idx] < drop_score:
             continue
-        color = (random.randint(0, 255), random.randint(0, 255),
-                 random.randint(0, 255))
+        color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
         draw_left.polygon(box, fill=color)
         draw_right.polygon(
             [
-                box[0][0], box[0][1], box[1][0], box[1][1], box[2][0],
-                box[2][1], box[3][0], box[3][1]
+                box[0][0],
+                box[0][1],
+                box[1][0],
+                box[1][1],
+                box[2][0],
+                box[2][1],
+                box[3][0],
+                box[3][1],
             ],
-            outline=color)
-        box_height = math.sqrt((box[0][0] - box[3][0])**2 + (box[0][1] - box[3][
-            1])**2)
-        box_width = math.sqrt((box[0][0] - box[1][0])**2 + (box[0][1] - box[1][
-            1])**2)
+            outline=color,
+        )
+        box_height = math.sqrt(
+            (box[0][0] - box[3][0]) ** 2 + (box[0][1] - box[3][1]) ** 2
+        )
+        box_width = math.sqrt(
+            (box[0][0] - box[1][0]) ** 2 + (box[0][1] - box[1][1]) ** 2
+        )
         if box_height > 2 * box_width:
             font_size = max(int(box_width * 0.9), 10)
             font = ImageFont.truetype(font_path, font_size, encoding="utf-8")
             cur_y = box[0][1]
             for c in txt:
                 char_size = font.getsize(c)
-                draw_right.text(
-                    (box[0][0] + 3, cur_y), c, fill=(0, 0, 0), font=font)
+                draw_right.text((box[0][0] + 3, cur_y), c, fill=(0, 0, 0), font=font)
                 cur_y += char_size[1]
         else:
             font_size = max(int(box_height * 0.8), 10)
             font = ImageFont.truetype(font_path, font_size, encoding="utf-8")
-            draw_right.text(
-                [box[0][0], box[0][1]], txt, fill=(0, 0, 0), font=font)
+            draw_right.text([box[0][0], box[0][1]], txt, fill=(0, 0, 0), font=font)
     img_left = Image.blend(image, img_left, 0.5)
-    img_show = Image.new('RGB', (w * 2, h), (255, 255, 255))
+    img_show = Image.new("RGB", (w * 2, h), (255, 255, 255))
     img_show.paste(img_left, (0, 0, w, h))
     img_show.paste(img_right, (w, 0, w * 2, h))
     return np.array(img_show)
@@ -272,6 +349,7 @@ def str_count(s):
         the number of Chinese characters
     """
     import string
+
     count_zh = count_pu = 0
     s_len = len(s)
     en_dg_count = 0
@@ -285,12 +363,9 @@ def str_count(s):
     return s_len - math.ceil(en_dg_count / 2)
 
 
-def text_visual(texts,
-                scores,
-                img_h=400,
-                img_w=600,
-                threshold=0.,
-                font_path="./doc/simfang.ttf"):
+def text_visual(
+    texts, scores, img_h=400, img_w=600, threshold=0.0, font_path="./doc/simfang.ttf"
+):
     """
     create new blank img and draw txt on it
     args:
@@ -303,11 +378,12 @@ def text_visual(texts,
     """
     if scores is not None:
         assert len(texts) == len(
-            scores), "The number of txts and corresponding scores must match"
+            scores
+        ), "The number of txts and corresponding scores must match"
 
     def create_blank_img():
         blank_img = np.ones(shape=[img_h, img_w], dtype=np.int8) * 255
-        blank_img[:, img_w - 1:] = 0
+        blank_img[:, img_w - 1 :] = 0
         blank_img = Image.fromarray(blank_img).convert("RGB")
         draw_txt = ImageDraw.Draw(blank_img)
         return blank_img, draw_txt
@@ -329,23 +405,23 @@ def text_visual(texts,
         first_line = True
         while str_count(txt) >= img_w // font_size - 4:
             tmp = txt
-            txt = tmp[:img_w // font_size - 4]
+            txt = tmp[: img_w // font_size - 4]
             if first_line:
-                new_txt = str(index) + ': ' + txt
+                new_txt = str(index) + ": " + txt
                 first_line = False
             else:
-                new_txt = '    ' + txt
+                new_txt = "    " + txt
             draw_txt.text((0, gap * count), new_txt, txt_color, font=font)
-            txt = tmp[img_w // font_size - 4:]
+            txt = tmp[img_w // font_size - 4 :]
             if count >= img_h // gap - 1:
                 txt_img_list.append(np.array(blank_img))
                 blank_img, draw_txt = create_blank_img()
                 count = 0
             count += 1
         if first_line:
-            new_txt = str(index) + ': ' + txt + '   ' + '%.3f' % (scores[idx])
+            new_txt = str(index) + ": " + txt + "   " + "%.3f" % (scores[idx])
         else:
-            new_txt = "  " + txt + "  " + '%.3f' % (scores[idx])
+            new_txt = "  " + txt + "  " + "%.3f" % (scores[idx])
         draw_txt.text((0, gap * count), new_txt, txt_color, font=font)
         # whether add new blank img or not
         if count >= img_h // gap - 1 and idx + 1 < len(texts):
@@ -363,7 +439,8 @@ def text_visual(texts,
 
 def base64_to_cv2(b64str):
     import base64
-    data = base64.b64decode(b64str.encode('utf8'))
+
+    data = base64.b64decode(b64str.encode("utf8"))
     data = np.fromstring(data, np.uint8)
     data = cv2.imdecode(data, cv2.IMREAD_COLOR)
     return data
@@ -380,12 +457,12 @@ def draw_boxes(image, boxes, scores=None, drop_score=0.5):
     return image
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_img = "./doc/test_v2"
     predict_txt = "./doc/predict.txt"
-    f = open(predict_txt, 'r')
+    f = open(predict_txt, "r")
     data = f.readlines()
-    img_path, anno = data[0].strip().split('\t')
+    img_path, anno = data[0].strip().split("\t")
     img_name = os.path.basename(img_path)
     img_path = os.path.join(test_img, img_name)
     image = Image.open(img_path)
@@ -393,9 +470,9 @@ if __name__ == '__main__':
     data = json.loads(anno)
     boxes, txts, scores = [], [], []
     for dic in data:
-        boxes.append(dic['points'])
-        txts.append(dic['transcription'])
-        scores.append(round(dic['scores'], 3))
+        boxes.append(dic["points"])
+        txts.append(dic["transcription"])
+        scores.append(round(dic["scores"], 3))
 
     new_img = draw_ocr(image, boxes, txts, scores)
 
